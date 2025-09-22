@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Tax Residential Status Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            background-image: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        }
+
+        .card {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .step-indicator {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .form-step {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-primary {
+            background-image: linear-gradient(to right, #4f46e5, #6366f1);
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .result-card {
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Custom radio button styles */
+        .custom-radio input[type="radio"] {
+            display: none;
+        }
+
+        .custom-radio label {
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .custom-radio input[type="radio"]:checked + label {
+            border-color: #4f46e5;
+            background-color: #e0e7ff;
+            color: #4f46e5;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <main class="w-full max-w-4xl mx-auto">
+        <div class="card rounded-2xl shadow-2xl p-6 md:p-10">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="inline-block bg-indigo-100 p-3 rounded-full mb-4">
+                    <i class="fas fa-landmark text-3xl text-indigo-600"></i>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">Residential Status Calculator</h1>
+                <p class="text-gray-500 mt-2">As per the Indian Income Tax Act, 1961</p>
+            </div>
+            
+            <!-- Step Indicator -->
+            <div class="mb-8 flex justify-between items-center max-w-xl mx-auto">
+                <div class="step-indicator flex-1 flex flex-col items-center">
+                    <div id="step-icon-1" class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">1</div>
+                    <p class="text-xs mt-2 text-center text-gray-600 font-semibold">Basic Info</p>
+                </div>
+                <div class="flex-1 h-1 bg-gray-300">
+                    <div id="step-progress-2" class="h-1 bg-indigo-600 w-0 transition-all duration-300"></div>
+                </div>
+                <div class="step-indicator flex-1 flex flex-col items-center">
+                    <div id="step-icon-2" class="w-10 h-10 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center font-bold">2</div>
+                    <p class="text-xs mt-2 text-center text-gray-600">Stay Details</p>
+                </div>
+                <div class="flex-1 h-1 bg-gray-300">
+                    <div id="step-progress-3" class="h-1 bg-indigo-600 w-0 transition-all duration-300"></div>
+                </div>
+                <div class="step-indicator flex-1 flex flex-col items-center">
+                    <div id="step-icon-3" class="w-10 h-10 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center font-bold">3</div>
+                    <p class="text-xs mt-2 text-center text-gray-600">Other Info</p>
+                </div>
+            </div>
+
+            <form id="taxForm">
+                <!-- Step 1: Basic Information -->
+                <div id="step-1" class="form-step active">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center">Let's start with some basic details.</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="assessmentYear" class="block text-sm font-medium text-gray-700 mb-1">Assessment Year (AY)</label>
+                            <select id="assessmentYear" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <!-- Options will be populated by JS -->
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Previous Year (PY) will be calculated automatically.</p>
+                        </div>
+                        <div class="custom-radio">
+                             <label class="block text-sm font-medium text-gray-700 mb-1">Are you an Indian Citizen?</label>
+                             <div class="flex gap-4 mt-2">
+                                <input type="radio" name="isIndianCitizen" id="citizenYes" value="yes" checked>
+                                <label for="citizenYes" class="flex-1 text-center p-3 rounded-lg font-medium">Yes</label>
+                                <input type="radio" name="isIndianCitizen" id="citizenNo" value="no">
+                                <label for="citizenNo" class="flex-1 text-center p-3 rounded-lg font-medium">No</label>
+                             </div>
+                        </div>
+                        <div class="custom-radio md:col-span-2">
+                             <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Are you a Person of Indian Origin (PIO)?
+                                <span class="tooltip">
+                                    <i class="fas fa-info-circle text-gray-400 ml-1"></i>
+                                    <span class="tooltiptext">A person is of Indian origin if they, or either of their parents or any of their grandparents, were born in undivided India.</span>
+                                </span>
+                             </label>
+                             <div class="flex gap-4 mt-2">
+                                <input type="radio" name="isPIO" id="pioYes" value="yes">
+                                <label for="pioYes" class="flex-1 text-center p-3 rounded-lg font-medium">Yes</label>
+                                <input type="radio" name="isPIO" id="pioNo" value="no" checked>
+                                <label for="pioNo" class="flex-1 text-center p-3 rounded-lg font-medium">No</label>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Stay Details -->
+                <div id="step-2" class="form-step">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center">Tell us about your stay in India.</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Stay in India during Previous Year (<span id="pyLabel1" class="font-bold"></span>)
+                            </label>
+                            <p class="text-xs text-gray-500 mb-2">Enter number of days, or use the date picker for an accurate count.</p>
+                            <div class="flex items-center gap-4">
+                               <input type="number" id="stayPY" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 185">
+                               <div class="relative">
+                                  <input type="text" id="datePickerPY" class="w-12 h-12 text-center border border-gray-300 rounded-lg cursor-pointer" placeholder="📅">
+                               </div>
+                            </div>
+                        </div>
+                        <div id="precedingYearsSection" class="space-y-6 hidden">
+                            <div>
+                               <label for="stay4Y" class="block text-sm font-medium text-gray-700 mb-1">
+                                Stay in India during 4 preceding years (<span id="py4Label" class="font-bold"></span>)
+                               </label>
+                               <input type="number" id="stay4Y" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 400">
+                            </div>
+                            <div>
+                               <label for="stay7Y" class="block text-sm font-medium text-gray-700 mb-1">
+                                Stay in India during 7 preceding years (<span id="py7Label" class="font-bold"></span>)
+                               </label>
+                               <input type="number" id="stay7Y" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 800">
+                            </div>
+                            <div>
+                               <label for="residentIn2of10Y" class="block text-sm font-medium text-gray-700 mb-1">
+                                Were you a Resident in at least 2 out of 10 preceding years?
+                               </label>
+                               <select id="residentIn2of10Y" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                   <option value="yes">Yes</option>
+                                   <option value="no">No</option>
+                               </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Other Information -->
+                <div id="step-3" class="form-step">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center">Just a few more questions.</h2>
+                    <div class="space-y-6">
+                        <div id="exceptionSection1" class="custom-radio hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Did you leave India for employment purposes during the PY?</label>
+                            <div class="flex gap-4 mt-2">
+                                <input type="radio" name="leftForEmployment" id="employmentYes" value="yes">
+                                <label for="employmentYes" class="flex-1 text-center p-3 rounded-lg font-medium">Yes</label>
+                                <input type="radio" name="leftForEmployment" id="employmentNo" value="no" checked>
+                                <label for="employmentNo" class="flex-1 text-center p-3 rounded-lg font-medium">No</label>
+                             </div>
+                        </div>
+                         <div id="exceptionSection2" class="custom-radio hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Are you a crew member of an Indian ship?</label>
+                            <div class="flex gap-4 mt-2">
+                                <input type="radio" name="isCrewMember" id="crewYes" value="yes">
+                                <label for="crewYes" class="flex-1 text-center p-3 rounded-lg font-medium">Yes</label>
+                                <input type="radio" name="isCrewMember" id="crewNo" value="no" checked>
+                                <label for="crewNo" class="flex-1 text-center p-3 rounded-lg font-medium">No</label>
+                             </div>
+                        </div>
+                        <div id="deemedResidentSection" class="custom-radio hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Is your total income (other than from foreign sources) more than ₹15 lakhs during the PY?</label>
+                            <div class="flex gap-4 mt-2">
+                               <input type="radio" name="incomeOver15L" id="incomeYes" value="yes">
+                               <label for="incomeYes" class="flex-1 text-center p-3 rounded-lg font-medium">Yes</label>
+                               <input type="radio" name="incomeOver15L" id="incomeNo" value="no" checked>
+                               <label for="incomeNo" class="flex-1 text-center p-3 rounded-lg font-medium">No</label>
+                            </div>
+                        </div>
+                        <div id="taxLiabilitySection" class="custom-radio hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Are you liable to pay tax in any other country or territory by reason of your domicile or residence?</label>
+                             <div class="flex gap-4 mt-2">
+                               <input type="radio" name="isTaxableElsewhere" id="taxableYes" value="yes" checked>
+                               <label for="taxableYes" class="flex-1 text-center p-3 rounded-lg font-medium">Yes</label>
+                               <input type="radio" name="isTaxableElsewhere" id="taxableNo" value="no">
+                               <label for="taxableNo" class="flex-1 text-center p-3 rounded-lg font-medium">No</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Navigation Buttons -->
+            <div id="navigation" class="mt-8 flex justify-between items-center">
+                <button id="prevBtn" class="bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors duration-300 invisible">Back</button>
+                <button id="nextBtn" class="btn-primary text-white font-bold py-3 px-8 rounded-lg shadow-md">Next <i class="fas fa-arrow-right ml-2"></i></button>
+                <button id="calculateBtn" class="btn-primary text-white font-bold py-3 px-8 rounded-lg shadow-md hidden">Calculate <i class="fas fa-calculator ml-2"></i></button>
+            </div>
+
+            <!-- Result Section -->
+            <div id="resultSection" class="hidden mt-8 text-center">
+                <!-- Content will be populated by JS -->
+            </div>
+        </div>
+        <footer class="text-center mt-4 text-sm text-gray-500">
+            <p>Disclaimer: This tool is for informational purposes only and should not be considered as legal or tax advice. Consult a professional for accurate guidance.</p>
+        </footer>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('taxForm');
+            const steps = document.querySelectorAll('.form-step');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resultSection = document.getElementById('resultSection');
+            
+            let currentStep = 0;
+
+            const assessmentYearSelect = document.getElementById('assessmentYear');
+            const currentYear = new Date().getFullYear();
+            const startMonth = new Date().getMonth();
+
+            // Populate Assessment Years
+            // If current month is April (3) or later, the current AY has started.
+            const ayStartYear = startMonth >= 3 ? currentYear + 1 : currentYear;
+            for (let i = 0; i < 5; i++) {
+                const year = ayStartYear - i;
+                const option = document.createElement('option');
+                option.value = `${year-1}-${year.toString().slice(-2)}`;
+                option.textContent = `AY ${year}-${(year+1).toString().slice(-2)}`;
+                assessmentYearSelect.appendChild(option);
+            }
+            
+            let pyStart, pyEnd;
+
+            function updatePYLabels() {
+                const selectedAY = assessmentYearSelect.value;
+                const startYear = parseInt(selectedAY.split('-')[0]);
+                pyStart = `${startYear}-04-01`;
+                pyEnd = `${startYear+1}-03-31`;
+
+                document.getElementById('pyLabel1').textContent = `1st Apr ${startYear} to 31st Mar ${startYear+1}`;
+                document.getElementById('py4Label').textContent = `1st Apr ${startYear-4} to 31st Mar ${startYear}`;
+                document.getElementById('py7Label').textContent = `1st Apr ${startYear-7} to 31st Mar ${startYear}`;
+            }
+
+            // Date Picker Initialization
+            const fp = flatpickr("#datePickerPY", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                onClose: function(selectedDates) {
+                    if (selectedDates.length === 2) {
+                        const start = selectedDates[0];
+                        const end = selectedDates[1];
+                        const diffTime = Math.abs(end - start);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                        document.getElementById('stayPY').value = diffDays;
+                    }
+                }
+            });
+
+            assessmentYearSelect.addEventListener('change', () => {
+                updatePYLabels();
+                const selectedAY = assessmentYearSelect.value;
+                const startYear = parseInt(selectedAY.split('-')[0]);
+                fp.set('minDate', `${startYear}-04-01`);
+                fp.set('maxDate', `${startYear+1}-03-31`);
+                fp.clear();
+            });
+            updatePYLabels(); // Initial call
+            assessmentYearSelect.dispatchEvent(new Event('change'));
+
+            function showStep(stepIndex) {
+                steps.forEach((step, index) => {
+                    step.classList.toggle('active', index === stepIndex);
+                });
+                currentStep = stepIndex;
+                updateNavigation();
+                updateStepIndicator();
+            }
+
+            function updateNavigation() {
+                prevBtn.classList.toggle('invisible', currentStep === 0);
+                nextBtn.classList.toggle('hidden', currentStep === steps.length - 1);
+                calculateBtn.classList.toggle('hidden', currentStep !== steps.length - 1);
+            }
+
+            function updateStepIndicator() {
+                for(let i=1; i<=3; i++){
+                    const icon = document.getElementById(`step-icon-${i}`);
+                    const progress = document.getElementById(`step-progress-${i}`);
+
+                    if (i <= currentStep + 1) {
+                         icon.classList.remove('bg-gray-300', 'text-gray-500');
+                         icon.classList.add('bg-indigo-600', 'text-white');
+                         if(i>1) {
+                            document.getElementById(`step-progress-${i}`).style.width = '100%';
+                         }
+                    } else {
+                        icon.classList.add('bg-gray-300', 'text-gray-500');
+                        icon.classList.remove('bg-indigo-600', 'text-white');
+                        if(i>1) {
+                            document.getElementById(`step-progress-${i}`).style.width = '0%';
+                         }
+                    }
+                }
+            }
+
+            function showConditionalFields() {
+                const isIndianCitizen = document.querySelector('input[name="isIndianCitizen"]:checked').value === 'yes';
+                const stayPY = parseInt(document.getElementById('stayPY').value) || 0;
+
+                // Preceding years section logic
+                const precedingYearsSection = document.getElementById('precedingYearsSection');
+                if (stayPY >= 60 && stayPY < 182) {
+                    precedingYearsSection.classList.remove('hidden');
+                } else {
+                    precedingYearsSection.classList.add('hidden');
+                }
+                
+                // Exception sections logic (Step 3)
+                const exceptionSection1 = document.getElementById('exceptionSection1');
+                const exceptionSection2 = document.getElementById('exceptionSection2');
+                if (isIndianCitizen && stayPY >= 60 && stayPY < 182) {
+                    exceptionSection1.classList.remove('hidden');
+                    exceptionSection2.classList.remove('hidden');
+                } else {
+                    exceptionSection1.classList.add('hidden');
+                    exceptionSection2.classList.add('hidden');
+                }
+
+                // Deemed resident section logic (Step 3)
+                const deemedResidentSection = document.getElementById('deemedResidentSection');
+                const taxLiabilitySection = document.getElementById('taxLiabilitySection');
+                
+                if (isIndianCitizen) {
+                    deemedResidentSection.classList.remove('hidden');
+                    const incomeOver15L = document.querySelector('input[name="incomeOver15L"]:checked').value === 'yes';
+                    if (incomeOver15L) {
+                        taxLiabilitySection.classList.remove('hidden');
+                    } else {
+                        taxLiabilitySection.classList.add('hidden');
+                    }
+                } else {
+                    deemedResidentSection.classList.add('hidden');
+                    taxLiabilitySection.classList.add('hidden');
+                }
+            }
+
+            // Add event listeners to inputs to show conditional fields dynamically
+            document.querySelectorAll('input[name="isIndianCitizen"], input[name="incomeOver15L"], #stayPY').forEach(el => {
+                el.addEventListener('input', showConditionalFields);
+                el.addEventListener('change', showConditionalFields);
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < steps.length - 1) {
+                    // Validation could be added here
+                    showStep(currentStep + 1);
+                    showConditionalFields(); // Update fields when moving to next step
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 0) {
+                    showStep(currentStep - 1);
+                }
+            });
+
+            calculateBtn.addEventListener('click', () => {
+                const formData = {
+                    isIndianCitizen: document.querySelector('input[name="isIndianCitizen"]:checked').value === 'yes',
+                    isPIO: document.querySelector('input[name="isPIO"]:checked').value === 'yes',
+                    stayPY: parseInt(document.getElementById('stayPY').value) || 0,
+                    stay4Y: parseInt(document.getElementById('stay4Y').value) || 0,
+                    stay7Y: parseInt(document.getElementById('stay7Y').value) || 0,
+                    residentIn2of10Y: document.getElementById('residentIn2of10Y').value === 'yes',
+                    leftForEmployment: document.querySelector('input[name="leftForEmployment"]:checked').value === 'yes',
+                    isCrewMember: document.querySelector('input[name="isCrewMember"]:checked').value === 'yes',
+                    incomeOver15L: document.querySelector('input[name="incomeOver15L"]:checked').value === 'yes',
+                    isTaxableElsewhere: document.querySelector('input[name="isTaxableElsewhere"]:checked').value === 'yes',
+                };
+
+                const result = determineStatus(formData);
+                displayResult(result);
+            });
+
+            function determineStatus(data) {
+                let status = 'Non-Resident (NR)';
+                let reason = 'You do not meet any of the basic conditions for residency.';
+                let isResident = false;
+                let isDeemedResident = false;
+
+                // Check for Deemed Residency [Sec 6(1A)]
+                if (data.isIndianCitizen && data.incomeOver15L && !data.isTaxableElsewhere) {
+                    isResident = true;
+                    isDeemedResident = true;
+                    status = 'Resident but Not Ordinarily Resident (RNOR)';
+                    reason = 'You are considered a Deemed Resident under Sec 6(1A) as an Indian citizen with Indian income over ₹15 lakhs, not paying tax elsewhere. Deemed residents are always RNOR.';
+                    return { status, reason };
+                }
+
+                // Basic Conditions for Residency [Sec 6(1)]
+                const condition1 = data.stayPY >= 182;
+                
+                // Check if exceptions apply to condition 2
+                let isExceptionApplicable = (data.isIndianCitizen && (data.leftForEmployment || data.isCrewMember)) ||
+                                           ((data.isIndianCitizen || data.isPIO) && data.incomeOver15L && data.stayPY >= 120);
+
+                let isSpecialCaseForPIO = (data.isIndianCitizen || data.isPIO) && data.incomeOver15L;
+                
+                let condition2;
+                if(isExceptionApplicable){
+                     // The 60-day rule is replaced by 182 days, so condition2 is effectively false
+                     condition2 = false;
+                } else if (isSpecialCaseForPIO) {
+                    condition2 = data.stayPY >= 120 && data.stay4Y >= 365;
+                }
+                else {
+                    condition2 = data.stayPY >= 60 && data.stay4Y >= 365;
+                }
+                
+
+                if (condition1 || condition2) {
+                    isResident = true;
+                }
+
+                if (isResident) {
+                    // Conditions for being Not Ordinarily Resident (RNOR) [Sec 6(6)]
+                    const rnorConditionA = !data.residentIn2of10Y;
+                    const rnorConditionB = data.stay7Y < 730;
+
+                    if (rnorConditionA || rnorConditionB) {
+                        status = 'Resident but Not Ordinarily Resident (RNOR)';
+                        reason = 'You satisfy the basic conditions for being a Resident. However, you are classified as RNOR because you either have not been a resident in 2 of the past 10 years, or your stay in the past 7 years is less than 730 days.';
+                    } else {
+                        status = 'Resident and Ordinarily Resident (ROR)';
+                        reason = 'You satisfy the basic conditions for being a Resident [Sec 6(1)] and also fulfill the additional conditions to be Ordinarily Resident [Sec 6(6)].';
+                    }
+                } else {
+                    // Recheck for the special case for PIOs which leads to RNOR status
+                    if (isSpecialCaseForPIO && data.stayPY >= 120 && data.stayPY < 182 && data.stay4Y >= 365) {
+                         status = 'Resident but Not Ordinarily Resident (RNOR)';
+                         reason = 'As a Person of Indian Origin with Indian income over ₹15 lakh, staying between 120 and 181 days in the PY and over 365 days in the last 4 years makes you an RNOR.';
+                    }
+                }
+
+                return { status, reason };
+            }
+
+            function displayResult(result) {
+                let icon, color, textColor;
+                switch (result.status) {
+                    case 'Resident and Ordinarily Resident (ROR)':
+                        icon = 'fa-solid fa-house-user';
+                        color = 'bg-green-100';
+                        textColor = 'text-green-800';
+                        break;
+                    case 'Resident but Not Ordinarily Resident (RNOR)':
+                        icon = 'fa-solid fa-house-circle-check';
+                        color = 'bg-yellow-100';
+                        textColor = 'text-yellow-800';
+                        break;
+                    case 'Non-Resident (NR)':
+                        icon = 'fa-solid fa-plane-departure';
+                        color = 'bg-red-100';
+                        textColor = 'text-red-800';
+                        break;
+                }
+
+                resultSection.innerHTML = `
+                    <div class="result-card p-6 md:p-8 rounded-2xl ${color} ${textColor}">
+                        <div class="inline-block p-4 rounded-full bg-white mb-4">
+                            <i class="${icon} text-4xl"></i>
+                        </div>
+                        <p class="text-sm font-bold uppercase tracking-wider">Your Residential Status is</p>
+                        <h3 class="text-3xl md:text-4xl font-extrabold mt-2">${result.status}</h3>
+                        <p class="mt-4 max-w-2xl mx-auto text-sm md:text-base">${result.reason}</p>
+                        <div class="mt-6">
+                            <h4 class="font-bold text-lg mb-2">General Implications:</h4>
+                            <ul class="text-left max-w-md mx-auto list-disc list-inside text-sm md:text-base space-y-1">
+                                ${getImplications(result.status)}
+                            </ul>
+                        </div>
+                    </div>
+                    <button id="resetBtn" class="mt-6 bg-gray-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-600 transition-colors duration-300">
+                        <i class="fas fa-redo mr-2"></i> Start Over
+                    </button>
+                `;
+                resultSection.classList.remove('hidden');
+                document.getElementById('navigation').classList.add('hidden');
+                form.classList.add('hidden');
+
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    form.reset();
+                    resultSection.innerHTML = '';
+                    resultSection.classList.add('hidden');
+                    form.classList.remove('hidden');
+                    document.getElementById('navigation').classList.remove('hidden');
+                    showStep(0);
+                    showConditionalFields(); // Reset conditional fields
+                    assessmentYearSelect.dispatchEvent(new Event('change'));
+                });
+            }
+
+            function getImplications(status) {
+                switch (status) {
+                    case 'Resident and Ordinarily Resident (ROR)':
+                        return `
+                            <li>Your global income is taxable in India.</li>
+                            <li>You are required to report all foreign assets in your Indian tax return.</li>
+                            <li>Eligible for all deductions and exemptions under the Income Tax Act.</li>
+                        `;
+                    case 'Resident but Not Ordinarily Resident (RNOR)':
+                        return `
+                            <li>Indian-sourced income is taxable in India.</li>
+                            <li>Foreign-sourced income is taxable only if derived from a business controlled in or a profession set up in India.</li>
+                            <li>You are not required to report foreign assets.</li>
+                        `;
+                    case 'Non-Resident (NR)':
+                        return `
+                            <li>Only income that is received, accrues, or arises in India is taxable in India.</li>
+                            <li>Global income is not taxable in India.</li>
+                            <li>You may be eligible for benefits under Double Taxation Avoidance Agreements (DTAA).</li>
+                        `;
+                }
+            }
+
+            showStep(0); // Initialize the form
+        });
+    </script>
+</body>
+</html>
